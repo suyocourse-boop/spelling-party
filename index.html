@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spelling Party!</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg1:#7fdbff;--bg2:#ffe66d;--card:#fff;--ink:#3b2a6b;--slot:#fff7d6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg1:#4b3bb5;--bg2:#d65db1;--card:#fff7ee;--ink:#2d1b69;--slot:#ffeab0}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font-family:'Baloo 2','Comic Sans MS',system-ui,sans-serif;color:var(--ink);background:linear-gradient(180deg,var(--bg1),var(--bg2));overflow-x:hidden;user-select:none}
+.bg{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.bg span{position:absolute;font-size:34px;animation:float 9s ease-in-out infinite;opacity:.8}
+@keyframes float{50%{transform:translateY(-30px) rotate(15deg)}}
+#app{position:relative;max-width:640px;margin:0 auto;padding:12px 14px 24px;min-height:100%;display:flex;flex-direction:column;gap:12px}
+h1{margin:0;text-align:center;font-size:clamp(30px,8vw,48px);font-weight:800;letter-spacing:1px;text-shadow:3px 3px 0 #fff}
+h1 b:nth-child(4n+1){color:#ff3d54}h1 b:nth-child(4n+2){color:#ff9f1c}h1 b:nth-child(4n+3){color:#2bb673}h1 b:nth-child(4n){color:#3a86ff}
+h1 b{display:inline-block;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-5deg)}}
+.hud{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.pill{background:#fff;border-radius:30px;padding:4px 16px;font-weight:800;font-size:20px;box-shadow:0 4px 0 rgba(0,0,0,.15)}
+.bar{height:16px;background:#fff8;border-radius:10px;overflow:hidden;border:3px solid #fff}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff3d54,#ff9f1c,#2bb673);transition:width .5s;border-radius:10px}
+.card{background:var(--card);border-radius:32px;padding:16px;text-align:center;box-shadow:0 8px 0 rgba(0,0,0,.15);position:relative;border:5px solid #fff}
+.pic{font-size:clamp(90px,28vw,150px);line-height:1.1;display:inline-block;animation:wig 2.4s ease-in-out infinite;filter:drop-shadow(0 8px 4px rgba(0,0,0,.18))}
+@keyframes wig{0%,100%{transform:rotate(-6deg) scale(1)}50%{transform:rotate(6deg) scale(1.08)}}
+.label{font-weight:800;font-size:22px;color:#fff;display:inline-block;padding:2px 24px;border-radius:0 0 18px 18px;position:absolute;top:-4px;left:50%;transform:translateX(-50%)}
+.slots{display:flex;gap:5px;justify-content:center;margin:8px 0}
+.slot{width:clamp(30px,min(14vw,calc((100vw - 110px)/var(--n,5))),70px);height:clamp(58px,17vw,84px);border-radius:16px;background:var(--slot);border:4px dashed #ffb703;display:grid;place-items:center;font-size:clamp(32px,10vw,50px);font-weight:800;color:#fff}
+.slot.on{border:4px solid #fff;animation:pop .45s}
+@keyframes pop{0%{transform:scale(.3) rotate(-30deg)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+.tiles{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 0}
+.tile,.btn{font:inherit;font-weight:800;border:0;color:#fff;cursor:pointer;box-shadow:0 7px 0 rgba(0,0,0,.25);transition:transform .1s,box-shadow .1s}
+.tile{width:clamp(64px,20vw,88px);height:clamp(64px,20vw,88px);border-radius:24px;font-size:clamp(34px,11vw,50px);animation:bob 1.8s ease-in-out infinite}
+.tile:active,.btn:active{transform:translateY(6px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.tile.used{visibility:hidden}
+.tile.shake{animation:shake .4s}
+.tile.hint{outline:6px solid #fff;animation:pulse .5s infinite alternate}
+@keyframes shake{25%{transform:translateX(-12px) rotate(-8deg)}75%{transform:translateX(12px) rotate(8deg)}}
+@keyframes pulse{to{transform:scale(1.2)}}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{border-radius:30px;padding:10px 26px;font-size:24px}
+.big{font-size:32px;padding:14px 44px;background:linear-gradient(#2bd96b,#16a34a);animation:pulse .6s infinite alternate}
+.mascot{position:absolute;right:-6px;top:-34px;font-size:64px;animation:bob 1.2s infinite}
+.say{position:absolute;left:8px;top:8px;background:#fff;border-radius:18px;padding:4px 14px;font-weight:800;font-size:18px;max-width:55%;text-align:left;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.side{position:fixed;bottom:6px;font-size:54px;animation:bob 1.4s infinite;pointer-events:none}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:9}
+.toast{position:fixed;top:30%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:10;background:#fff;border-radius:30px;padding:16px 30px;font-size:32px;font-weight:800;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.2);transition:transform .4s cubic-bezier(.3,1.8,.5,1)}
+.toast.show{transform:translate(-50%,-50%) scale(1)}
+.hide{display:none!important}
+:root{--h1:#8fd45a;--h2:#5fbf3f}
+.h1{fill:var(--h1)}.h2{fill:var(--h2)}
+body[data-s=spring]{--h1:#b8ec7a;--h2:#8fd45a}body[data-s=autumn]{--h1:#e8b04a;--h2:#d9822b}body[data-s=winter]{--h1:#fff;--h2:#dcecf8}
+@media not all and (prefers-color-scheme:dark){body[data-s=spring]{--sk1:#8fd0ff;--sk2:#ffe3f1;--sk3:#d8f5a2}body[data-s=autumn]{--sk1:#ff9a5a;--sk2:#ffd9a0;--sk3:#f3c46b}body[data-s=winter]{--sk1:#7fb2e6;--sk2:#d6ecff;--sk3:#fff}}
+.snow span{position:fixed;top:-30px;font-size:24px;pointer-events:none;animation:fall 8s linear infinite}
+@keyframes fall{to{transform:translateY(112vh) rotate(200deg)}}
+.card{padding-bottom:36px;box-shadow:0 8px 0 rgba(0,0,0,.15),inset 0 0 0 3px #f7b801,inset 0 0 0 5px #d62828}
+.card::after{content:"";position:absolute;left:20px;right:20px;bottom:10px;height:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M2 2H14V14H5V6H10V11' fill='none' stroke='%23d62828' stroke-width='2.2'/%3E%3C/svg%3E") repeat-x}
+.mascot{width:58px;height:72px;top:-46px;font-size:0}.mascot svg{display:block}
+:root{--sk1:#3aa9ff;--sk2:#bfe9ff;--sk3:#d5f58a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sk1:#1b1f5e;--sk2:#4b3bb5;--sk3:#3b7a57}}
+body{background:linear-gradient(180deg,var(--sk1) 0%,var(--sk2) 60%,var(--sk3) 100%) fixed}
+.scene{position:fixed;left:0;right:0;bottom:0;height:34vh;pointer-events:none}.scene svg{width:100%;height:100%;display:block}
+.sun{position:fixed;top:6px;left:6px;font-size:76px;animation:spin 30s linear infinite;pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.run,.fly,.graze{position:fixed;pointer-events:none}
+.run{bottom:9vh;left:-90px;font-size:56px;animation:run 16s linear infinite}
+.run i,.fly i{display:inline-block;font-style:normal;transform:scaleX(-1)}
+.run i{animation:gal .5s ease-in-out infinite}
+@keyframes run{to{left:108vw}}
+@keyframes gal{50%{transform:scaleX(-1) translateY(-9px) rotate(5deg)}}
+.fly{top:12vh;left:-90px;font-size:48px;animation:run 24s linear 3s infinite}
+.fly i{animation:soar 3s ease-in-out infinite}
+@keyframes soar{50%{transform:scaleX(-1) translateY(-26px) rotate(-6deg)}}
+.graze{bottom:5vh;font-size:30px;animation:nib 2s ease-in-out infinite}
+@keyframes nib{50%{transform:translateY(4px) rotate(-8deg)}}
+.strip{position:fixed;left:0;right:0;bottom:0;height:10px;pointer-events:none;background:repeating-linear-gradient(90deg,#d62828 0 20px,#f7b801 20px 30px,#1d4e9e 30px 50px,#f7b801 50px 60px)}
+.lvs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}.lvb{font:inherit;border:0;border-radius:24px;padding:12px 6px;color:#fff;font-weight:800;font-size:20px;box-shadow:0 7px 0 rgba(0,0,0,.25);cursor:pointer}.lvb:active{transform:translateY(5px)}.lvb:disabled{filter:grayscale(1);opacity:.6}.lvb b{display:block;font-size:40px}
+.chip{font:inherit;font-weight:800;font-size:18px;border:3px solid #fff;border-radius:26px;padding:4px 16px;background:#fff8;color:var(--ink);cursor:pointer;transition:transform .15s}.chip:active{transform:scale(.92)}.chip.on{background:#ff3d54;color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.2)}
+.tbar{height:14px;background:#0002;border-radius:10px;overflow:hidden;margin:6px 0}.tbar i{display:block;height:100%;width:100%;background:#2bb673;border-radius:10px}
+.mn{font-size:32px;font-weight:800;color:#e0245e}
+#typer{font:inherit;font-weight:800;font-size:30px;text-align:center;width:80%;max-width:360px;padding:8px;border-radius:24px;border:4px solid #3a86ff;color:var(--ink);background:#fff;margin:6px 0;text-transform:uppercase}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important}}
+</style></head><body>
+<div class="bg" id="bg"></div>
+<div class="scene" aria-hidden="true"><svg viewBox="0 0 800 220" preserveAspectRatio="xMidYMax slice"><defs><g id="ger"><rect x="0" y="14" width="56" height="26" fill="#fff" stroke="#d9d9d9"/><polygon points="-6,16 28,-6 62,16" fill="#fff" stroke="#d9d9d9"/><rect x="0" y="14" width="56" height="4" fill="#e63946"/><rect x="22" y="22" width="12" height="18" rx="2" fill="#ff9f1c"/><circle cx="28" cy="-6" r="3" fill="#e63946"/></g></defs><polygon points="0,150 90,60 150,110 230,40 320,125 420,70 520,130 610,50 700,115 800,75 800,220 0,220" fill="#8db7e8"/><polygon points="230,40 215,62 230,56 245,64" fill="#fff"/><polygon points="610,50 595,72 610,66 625,74" fill="#fff"/><path d="M0,170 Q150,120 320,160 T640,150 T800,160 V220 H0Z" class="h1"/><path d="M0,195 Q200,160 400,190 T800,180 V220 H0Z" class="h2"/><g transform="translate(110,148)"><use href="#ger"/></g><g transform="translate(185,160) scale(.8)"><use href="#ger"/></g><g transform="translate(560,152) scale(.9)"><use href="#ger"/></g><polygon points="690,178 705,148 720,178" fill="#8d8d9b"/><rect x="704" y="134" width="2" height="16" fill="#1d4e9e"/></svg></div>
+<div class="sun">☀️</div><div class="run"><i>🐎</i></div><div class="fly"><i>🦅</i></div>
+<div class="graze" style="left:22%">🐑</div><div class="graze" style="left:30%;animation-delay:-1s">🐐</div><div class="graze" style="right:22%;font-size:40px">🐪</div><div class="strip"></div><div class="snow" id="snow" aria-hidden="true"></div>
+<canvas id="fx"></canvas>
+<div class="toast" id="toast"></div>
+<div class="side" style="left:4px">👧</div><div class="side" style="right:4px;animation-delay:.5s">👦</div>
+<div id="app">
+<h1 id="title"></h1>
+<div class="hud"><div class="pill">⭐ <span id="stars">0</span></div><div class="pill">🔥 <span id="streak">0</span></div><div class="pill" id="badges">🏅</div></div>
+<div class="bar"><i id="prog"></i></div>
+<div class="row modes"><button class="chip" id="mMn">🇲🇳 Монгол</button><button class="chip" id="mTm">⏱ Хугацаа</button><button class="chip" id="mTy">✍️ Бичих</button></div>
+
+<div id="start" class="card">
+ <div class="pic">🐥</div>
+ <p style="font-size:26px;font-weight:800;margin:4px">Tap the letters to spell each word!</p>
+ <button class="btn big" id="go">▶ Let’s Play!</button>
+</div>
+
+<div id="play" class="card hide">
+ <div class="label" id="num" style="background:#ff3d54"></div>
+ <div class="say" id="say">Spell it!</div><div class="mascot" id="mascot">🐥</div>
+ <div style="height:14px"></div>
+ <div class="pic" id="pic"></div>
+ <div class="mn" id="mn"></div>
+ <div class="tbar hide" id="tbar"><i id="ti"></i></div>
+ <div class="slots" id="slots"></div>
+ <div class="tiles" id="tiles"></div>
+ <input id="typer" class="hide" maxlength="2" autocomplete="off" autocapitalize="characters" placeholder="✍️ Type here!">
+ <div class="row"><button class="btn" style="background:#3a86ff" id="hear">🔊 Hear</button><button class="btn" style="background:#ff9f1c" id="hintb">💡 Hint</button></div>
+ <div class="row" style="margin-top:14px"><button class="btn big hide" id="next">Next ➜</button></div>
+</div>
+
+<div id="end" class="card hide">
+ <div class="pic">🏆</div>
+ <p style="font-size:30px;font-weight:800;margin:4px">You’re a Spelling Superstar!</p>
+ <p style="font-size:24px;margin:4px">⭐ <span id="final"></span> stars · 🔥 best streak <span id="best"></span></p>
+ <button class="btn big" id="again">↻ Play Again</button>
+</div>
+</div>
+<script>
+let W=[["APPLE","🍎"],["BALL","🏐"],["CAT","🐱"],["DOG","🐶"],["BOOK","📚"],["PEN","🖊️"],["CAR","🚗"],["TREE","🌳"],["CUP","☕"],["FROG","🐸"],["GIRL","👧"],["BOY","👦"],["SUN","☀️"],["MOON","🌙"],["STAR","⭐"],["MILK","🥛"],["FISH","🐠"],["HOUSE","🏠"],["BIRD","🐦"],["CAKE","🍰"]];
+const COL=["#ff3d54","#ff9f1c","#2bb673","#3a86ff","#9b5de5","#f15bb5","#00b4d8"];
+const $=id=>document.getElementById(id);
+let i=0,n=0,stars=0,streak=0,best=0,miss=0,done=false,order=[];
+$("title").innerHTML=[..."SPELLING"].map((c,k)=>`<b style="animation-delay:${k*.12}s">${c}</b>`).join("")+" 🎉";
+$("bg").innerHTML=["⭐","☁️","🎈","🌈","✨","🦋","🎈","⭐","☁️","🌟"].map((e,k)=>`<span style="left:${k*10+Math.random()*5}%;top:${Math.random()*85}%;animation-delay:${-k}s;font-size:${24+Math.random()*30}px">${e}</span>`).join("");
+
+// sound
+let ac;function tone(f,d=.15,t="sine",v=.2,at=0){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,ac.currentTime+at);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+at+d);o.connect(g).connect(ac.destination);o.start(ac.currentTime+at);o.stop(ac.currentTime+at+d)}catch(e){}}
+const ding=k=>tone(520+k*90,.18,"triangle");
+const buzz=()=>tone(150,.25,"sawtooth",.12);
+const fanfare=()=>[523,659,784,1047].forEach((f,k)=>tone(f,.25,"triangle",.22,k*.12));
+function say(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=.8;u.pitch=1.3;speechSynthesis.speak(u)}catch(e){}}
+
+// confetti
+const cv=$("fx"),cx=cv.getContext("2d");let P=[];
+function size(){cv.width=innerWidth;cv.height=innerHeight}size();addEventListener("resize",size);
+function burst(n=120,x=cv.width/2,y=cv.height/3){for(let k=0;k<n;k++)P.push({x,y,vx:(Math.random()-.5)*16,vy:-Math.random()*14-3,r:Math.random()*8+5,c:COL[k%7],a:Math.random()*6,s:Math.random()<.3?"⭐":null,l:90+Math.random()*40})}
+(function loop(){cx.clearRect(0,0,cv.width,cv.height);P=P.filter(p=>p.l>0);for(const p of P){p.x+=p.vx;p.y+=p.vy;p.vy+=.4;p.a+=.2;p.l--;cx.save();cx.translate(p.x,p.y);cx.rotate(p.a);cx.globalAlpha=Math.min(1,p.l/30);if(p.s){cx.font=p.r*3+"px serif";cx.fillText(p.s,0,0)}else{cx.fillStyle=p.c;cx.fillRect(-p.r,-p.r/2,p.r*2,p.r)}cx.restore()}requestAnimationFrame(loop)})();
+
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),1800)}
+function shuffle(a){for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a}
+
+function load(){
+ const [w,e]=W[i];n=0;miss=0;done=false;
+ $("num").textContent=`Word ${i+1} of ${W.length}`;$("pic").textContent=e;$("say").textContent="Spell it!";$("mascot").textContent="🐥";
+ $("prog").style.width=(i/W.length*100)+"%";$("next").classList.add("hide");
+ $("slots").innerHTML=[...w].map((_,k)=>`<div class="slot" style="--c:${COL[k%7]}"></div>`).join("");
+ let L=[...w];if(i>=5){const ab="ABCDEFGHIJKLMNOPQRSTUVWXYZ";for(let k=0;k<2;k++)L.push(ab[Math.floor(Math.random()*26)])}
+ $("tiles").innerHTML="";
+ shuffle(L).forEach((c,k)=>{const b=document.createElement("button");b.className="tile";b.textContent=c;b.style.background=COL[(k+i)%7];b.style.animationDelay=k*.15+"s";b.onclick=()=>tap(b,c);$("tiles").appendChild(b)});
+ setTimeout(()=>say(w.toLowerCase()),300);setup();
+}
+function tap(b,c){
+ if(done||b.classList.contains("used"))return;
+ const w=W[i][0];
+ if(c===w[n]){
+  b.classList.add("used");b.classList.remove("hint");
+  const s=$("slots").children[n];s.textContent=c;s.style.background=COL[n%7];s.classList.add("on");
+  ding(n);const r=s.getBoundingClientRect();burst(14,r.left+r.width/2,r.top);n++;
+  document.querySelectorAll(".hint").forEach(h=>h.classList.remove("hint"));
+  if(n===w.length)win();
+ }else{
+  b.classList.remove("shake");void b.offsetWidth;b.classList.add("shake");buzz();miss++;streak=0;upd();
+  $("say").textContent=["Oops! Try again!","So close!","You can do it!"][miss%3];
+ }
+}
+function win(){
+ done=true;stopT();const earn=Math.max(1,3-miss)+(timerOn&&tl>.5*TL?1:0);stars+=earn;if(miss===0){streak++;best=Math.max(best,streak)}
+ upd();fanfare();burst(180);setTimeout(()=>burst(100,cv.width*.2,cv.height*.5),250);setTimeout(()=>burst(100,cv.width*.8,cv.height*.5),450);
+ const cheers=["Amazing!","Super!","Fantastic!","Wow!","Brilliant!"];
+ $("say").textContent=cheers[i%5]+" "+"⭐".repeat(earn);$("mascot").textContent="🥳";
+ setTimeout(()=>say(W[i][0].toLowerCase().split("").join(" ")+"... "+W[i][0].toLowerCase()),500);
+ const m={3:"🔥 3 in a row!",5:"🚀 5 in a row!",8:"👑 Spelling King!"}[streak];if(miss===0&&m)toast(m);
+ const bd=stars>=30?"🥇":stars>=15?"🥈":stars>=5?"🥉":"🏅";$("badges").textContent=bd;
+ $("next").textContent=i===W.length-1?"Finish 🏆":"Next ➜";$("next").classList.remove("hide");
+}
+function upd(){$("stars").textContent=stars;$("streak").textContent=streak}
+$("go").onclick=()=>{$("start").classList.add("hide");$("play").classList.remove("hide");tone(600);load()};
+$("next").onclick=()=>{i++;if(i>=W.length){$("play").classList.add("hide");$("end").classList.remove("hide");$("prog").style.width="100%";$("final").textContent=stars;$("best").textContent=best;fanfare();burst(300);setInterval(()=>burst(60,Math.random()*cv.width,cv.height*.3),900);say("You are a spelling superstar!")}else load()};
+$("hear").onclick=()=>say(W[i][0].toLowerCase());
+$("hintb").onclick=()=>{if(done)return;const c=W[i][0][n];const t=[...document.querySelectorAll(".tile:not(.used)")].find(x=>x.textContent===c);if(t){t.classList.add("hint");stars=Math.max(0,stars-0);miss=Math.max(miss,1)}};
+$("again").onclick=()=>location.reload();
+
+// modes: Mongolian / timer / typing
+const MN={APPLE:"Алим",BALL:"Бөмбөг",CAT:"Муур",DOG:"Нохой",BOOK:"Ном",PEN:"Үзэг",CAR:"Машин",TREE:"Мод",CUP:"Аяга",FROG:"Мэлхий",GIRL:"Охин",BOY:"Хүү",SUN:"Нар",MOON:"Сар",STAR:"Од",MILK:"Сүү",FISH:"Загас",HOUSE:"Байшин",BIRD:"Шувуу",CAKE:"Бялуу"};
+let mnOn=false,timerOn=false,typeOn=false,TL=30,tl=0,tm=null;
+function stopT(){clearInterval(tm)}
+function setup(){
+ $("mn").textContent=mnOn?"🇲🇳 "+MN[W[i][0]]:"";
+ $("tiles").classList.toggle("hide",typeOn);
+ $("typer").classList.toggle("hide",!typeOn);
+ if(typeOn){$("typer").value="";setTimeout(()=>$("typer").focus(),150)}
+ stopT();$("tbar").classList.toggle("hide",!timerOn);
+ if(timerOn&&!done){tl=TL;$("ti").style.width="100%";$("ti").style.background="#2bb673";
+  tm=setInterval(()=>{tl-=.1;$("ti").style.width=Math.max(0,tl/TL*100)+"%";$("ti").style.background=tl<8?"#ff3d54":"#2bb673";if(tl<=0)timeUp()},100)}
+}
+function timeUp(){
+ stopT();if(done)return;done=true;streak=0;upd();buzz();
+ const w=W[i][0];[...w].forEach((c,k)=>{const s=$("slots").children[k];s.textContent=c;s.style.background="#9aa";s.classList.add("on")});
+ $("say").textContent="Time’s up! ⏰";$("mascot").textContent="😅";
+ setTimeout(()=>say(w.toLowerCase()),400);
+ $("next").textContent=i===W.length-1?"Finish 🏆":"Next ➜";$("next").classList.remove("hide");
+}
+function press(c){
+ if(done)return;
+ const t=[...document.querySelectorAll(".tile")].find(x=>!x.classList.contains("used")&&x.textContent===c);
+ tap(t||document.createElement("i"),c);
+}
+$("typer").oninput=e=>{const c=e.target.value.slice(-1).toUpperCase();e.target.value="";if(/[A-Z]/.test(c))press(c)};
+$("pic").onclick=()=>{if(typeOn)$("typer").focus()};
+$("hintb").onclick=()=>{
+ if(done)return;const c=W[i][0][n];miss=Math.max(miss,1);
+ if(typeOn){$("say").textContent="Next letter: "+c;return}
+ const t=[...document.querySelectorAll(".tile:not(.used)")].find(x=>x.textContent===c);if(t)t.classList.add("hint");
+};
+function chip(id,get,set){
+ $(id).onclick=()=>{set(!get());$(id).classList.toggle("on",get());tone(500);
+  if(!$("play").classList.contains("hide")&&!done)setup();else if(!$("play").classList.contains("hide"))$("mn").textContent=mnOn?"🇲🇳 "+MN[W[i][0]]:""}
+}
+chip("mMn",()=>mnOn,v=>mnOn=v);chip("mTm",()=>timerOn,v=>timerOn=v);chip("mTy",()=>typeOn,v=>typeOn=v);
+
+// ===== levels, saved progress, install =====
+const BASE=W.slice();
+const LVN=[["🌱","Starter 1"],["🌿","Starter 2"],["🐾","Animals"],["🍎","Food"],["🎨","Colors"],["🧍","Body"],["🌦️","Nature"],["🏠","Home"],["🚀","Travel"],["🎉","Fun"],["🦒","Wild"],["🌊","Sea & Bugs"],["🍓","Fruit & Veg"],["🍭","Treats"],["👕","Clothes"],["✏️","School"],["⚽","Sports"],["👩‍⚕️","Jobs"],["🪐","Space & Earth"],["🦄","Magic"],["🛖","Mongolia"],["🍴","Kitchen"],["🛋️","Rooms"],["🔨","Tools"],["🚚","City"],["🎹","Music"],["⛈️","Seasons"],["🔢","Numbers"],["👪","Family"],["🐼","Cuties"],["🌹","Garden"],["🥟","Yum"],["💊","Health"],["🎂","Party"],["↔️","Opposites"],["🗼","Places"],["🏇","Naadam"],["🔷","Shapes"],["🏃","Actions"],["🦍","Safari"]];
+const NEWW=["PIG,🐷,Гахай;COW,🐮,Үнээ;HEN,🐔,Тахиа;DUCK,🦆,Нугас;LION,🦁,Арслан;BEAR,🐻,Баавгай;HORSE,🐴,Морь;SHEEP,🐑,Хонь;MOUSE,🐭,Хулгана;RABBIT,🐰,Туулай","EGG,🥚,Өндөг;BREAD,🍞,Талх;RICE,🍚,Будаа;PIZZA,🍕,Пицца;CORN,🌽,Эрдэнэ шиш;CHEESE,🧀,Бяслаг;BANANA,🍌,Банана;GRAPES,🍇,Усан үзэм;LEMON,🍋,Нимбэг;CARROT,🥕,Лууван","RED,🔴,Улаан;BLUE,🔵,Хөх;GREEN,🟢,Ногоон;YELLOW,🟡,Шар;BLACK,⚫,Хар;WHITE,⚪,Цагаан;ORANGE,🟠,Улбар шар;PURPLE,🟣,Нил ягаан;BROWN,🟤,Бор;PINK,🌸,Ягаан","EYE,👁️,Нүд;EAR,👂,Чих;NOSE,👃,Хамар;MOUTH,👄,Ам;HAND,✋,Гар;FOOT,🦶,Хөл;TEETH,🦷,Шүд;BRAIN,🧠,Тархи;HEART,❤️,Зүрх;FACE,🙂,Нүүр","RAIN,🌧️,Бороо;SNOW,❄️,Цас;WIND,💨,Салхи;CLOUD,☁️,Үүл;FIRE,🔥,Гал;WATER,💧,Ус;FLOWER,🌷,Цэцэг;LEAF,🍃,Навч;MOUNTAIN,⛰️,Уул;RAINBOW,🌈,Солонго","BED,🛏️,Ор;CHAIR,🪑,Сандал;DOOR,🚪,Хаалга;CLOCK,🕐,Цаг;LAMP,💡,Чийдэн;PHONE,📱,Утас;SHOE,👟,Гутал;HAT,🎩,Малгай;BAG,🎒,Цүнх;KEY,🔑,Түлхүүр","BUS,🚌,Автобус;TRAIN,🚆,Галт тэрэг;PLANE,✈️,Онгоц;SHIP,🚢,Хөлөг онгоц;BIKE,🚲,Дугуй;ROCKET,🚀,Пуужин;SCHOOL,🏫,Сургууль;TENT,⛺,Майхан;BRIDGE,🌉,Гүүр;CASTLE,🏰,Цайз","DRUM,🥁,Бөмбөр;GUITAR,🎸,Гитар;ROBOT,🤖,Робот;CROWN,👑,Титэм;GIFT,🎁,Бэлэг;KITE,🪁,Цаасан шувуу;BALLOON,🎈,Бөмбөлөг;TIGER,🐯,Бар;ELEPHANT,🐘,Заан;DRAGON,🐉,Луу","MONKEY,🐵,Сармагчин;ZEBRA,🦓,Зебр;GIRAFFE,🦒,Анааш;WOLF,🐺,Чоно;FOX,🦊,Үнэг;DEER,🦌,Буга;CAMEL,🐫,Тэмээ;GOAT,🐐,Ямаа;SNAKE,🐍,Могой;TURTLE,🐢,Яст мэлхий","WHALE,🐳,Халим;SHARK,🦈,Акул;CRAB,🦀,Хавч;BEE,🐝,Зөгий;ANT,🐜,Шоргоолж;SPIDER,🕷️,Аалз;SNAIL,🐌,Эмгэнэ;WORM,🐛,Хорхой;DOLPHIN,🐬,Далайн гахай;OWL,🦉,Шар шувуу","PEAR,🍐,Лийр;PEACH,🍑,Тоорой;MELON,🍈,Амтат гуа;CHERRY,🍒,Интоор;POTATO,🥔,Төмс;TOMATO,🍅,Улаан лооль;ONION,🧅,Сонгино;GARLIC,🧄,Сармис;MANGO,🥭,Манго;COCONUT,🥥,Наргил","TEA,🍵,Цай;JUICE,🧃,Шүүс;COFFEE,☕,Кофе;SODA,🥤,Ундаа;HONEY,🍯,Зөгийн бал;CANDY,🍬,Чихэр;COOKIE,🍪,Жигнэмэг;DONUT,🍩,Пончик;SOUP,🍲,Шөл;BURGER,🍔,Бургер","SHIRT,👕,Цамц;PANTS,👖,Өмд;DRESS,👗,Даашинз;SOCKS,🧦,Оймс;COAT,🧥,Пальто;SCARF,🧣,Ороолт;GLOVES,🧤,Бээлий;BOOTS,🥾,Гутал;CAP,🧢,Бейсболк;GLASSES,👓,Нүдний шил","PENCIL,✏️,Харандаа;PAPER,📄,Цаас;RULER,📏,Шугам;SCISSORS,✂️,Хайч;GLUE,🧴,Цавуу;PAINT,🎨,Будаг;NUMBER,🔢,Тоо;LETTER,🔤,Үсэг;TEACHER,🧑‍🏫,Багш;STUDENT,🧑‍🎓,Сурагч","SOCCER,⚽,Хөл бөмбөг;TENNIS,🎾,Теннис;SWIM,🏊,Сэлэх;RUN,🏃,Гүйх;JUMP,🦘,Үсрэх;DANCE,💃,Бүжиг;CHESS,♟️,Шатар;PUZZLE,🧩,Оньсого;MEDAL,🏅,Медаль;SKI,⛷️,Цана","DOCTOR,🧑‍⚕️,Эмч;NURSE,👩‍⚕️,Сувилагч;FARMER,🧑‍🌾,Тариачин;COOK,🧑‍🍳,Тогооч;PILOT,🧑‍✈️,Нисгэгч;POLICE,👮,Цагдаа;ARTIST,🧑‍🎨,Зураач;SINGER,🎤,Дуучин;DRIVER,🚕,Жолооч;KING,🤴,Хаан","EARTH,🌍,Дэлхий;SPACE,🌌,Сансар;PLANET,🪐,Гараг;COMET,☄️,Сүүлт од;SKY,🌤️,Тэнгэр;OCEAN,🌊,Далай;RIVER,🏞️,Гол;ISLAND,🏝️,Арал;DESERT,🏜️,Говь;FOREST,🌲,Ой","HAPPY,😊,Баяртай;SAD,😢,Гунигтай;ANGRY,😠,Ууртай;SLEEP,😴,Унтах;LOVE,💕,Хайр;MAGIC,🪄,Ид шид;GHOST,👻,Сүнс;PIRATE,🏴‍☠️,Далайн дээрэмчин;UNICORN,🦄,Дан эвэрт;SNOWMAN,⛄,Цасан хүн","GER,🛖,Гэр;YAK,🐃,Сарлаг;EAGLE,🦅,Бүргэд;WOOL,🧶,Ноос;BOW,🏹,Нум;HAY,🌾,Өвс;FLAG,🚩,Туг;COIN,🪙,Зоос;MAP,🗺️,Газрын зураг;GRASS,🌿,Зүлэг","SPOON,🥄,Халбага;FORK,🍴,Сэрээ;KNIFE,🔪,Хутга;PLATE,🍽️,Таваг;BOWL,🥣,Аяга;POT,🫕,Тогоо;PAN,🍳,Хайруулын таваг;JAR,🫙,Шил;SALT,🧂,Давс;BOTTLE,🍾,Лонх","SOFA,🛋️,Буйдан;RADIO,📻,Радио;CAMERA,📷,Камер;MIRROR,🪞,Толь;BROOM,🧹,Шүүр;SOAP,🧼,Саван;BATH,🛁,Ванн;CANDLE,🕯️,Лаа;WINDOW,🪟,Цонх;LADDER,🪜,Шат","HAMMER,🔨,Алх;SAW,🪚,Хөрөө;AXE,🪓,Сүх;ROPE,🪢,Олс;MAGNET,🧲,Соронз;BATTERY,🔋,Зай;PLUG,🔌,Залгуур;TORCH,🔦,Гар чийдэн;LOCK,🔒,Цоож;BELL,🔔,Хонх","TRUCK,🚚,Ачааны машин;TAXI,🚕,Такси;BOAT,⛵,Завь;TRACTOR,🚜,Трактор;ROAD,🛣️,Зам;LIGHT,🚦,Гэрлэн дохио;SHOP,🏪,Дэлгүүр;HOTEL,🏨,Зочид буудал;BANK,🏦,Банк;PARK,🎡,Цэцэрлэгт хүрээлэн","PIANO,🎹,Төгөлдөр хуур;VIOLIN,🎻,Хийл;TRUMPET,🎺,Бүрээ;FLUTE,🪈,Лимбэ;SONG,🎶,Дуу;MOVIE,🎬,Кино;STAGE,🎭,Тайз;DOLL,🪆,Хүүхэлдэй;CIRCUS,🎪,Цирк;PHOTO,📸,Гэрэл зураг","STORM,⛈️,Шуурга;SPRING,🌱,Хавар;SUMMER,🏖️,Зун;AUTUMN,🍂,Намар;WINTER,🥶,Өвөл;NIGHT,🌃,Шөнө;MORNING,🌅,Өглөө;TODAY,📅,Өнөөдөр;THUNDER,⚡,Аянга;FOG,🌫️,Манан","ONE,1️⃣,Нэг;TWO,2️⃣,Хоёр;THREE,3️⃣,Гурав;FOUR,4️⃣,Дөрөв;FIVE,5️⃣,Тав;SIX,6️⃣,Зургаа;SEVEN,7️⃣,Долоо;EIGHT,8️⃣,Найм;NINE,9️⃣,Ес;TEN,🔟,Арав","MOM,👩,Ээж;DAD,👨,Аав;BABY,👶,Нялх хүүхэд;GRANDMA,👵,Эмээ;GRANDPA,👴,Өвөө;FRIEND,🤝,Найз;FAMILY,👨‍👩‍👧,Гэр бүл;TWINS,👯,Ихэр;WOMAN,🙋‍♀️,Эмэгтэй;CHILD,🧒,Хүүхэд","PUPPY,🐕,Гөлөг;KITTEN,🐈,Зулзага;PARROT,🦜,Тоть;PENGUIN,🐧,Оцон шувуу;PANDA,🐼,Панда;KOALA,🐨,Коала;CHICK,🐥,Дэгдээхэй;OCTOPUS,🐙,Наймалж;BEETLE,🪲,Цох;LOBSTER,🦞,Далайн хавч","SEED,🌰,Үр;ROSE,🌹,Сарнай;CACTUS,🌵,Кактус;PALM,🌴,Далдуу мод;BAMBOO,🎋,Хулс;CLOVER,🍀,Хошоонгор;NEST,🪹,Үүр;WEB,🕸️,Аалзны тор;ROCK,🪨,Чулуу;FEATHER,🪶,Өд","PIE,🥧,Пирог;PANCAKE,🥞,Блин;WAFFLE,🧇,Вафли;PRETZEL,🥨,Крендель;BAGEL,🥯,Бейгл;SUSHI,🍣,Суши;NOODLE,🍜,Гоймон;DUMPLING,🥟,Банш;TACO,🌮,Тако;SALAD,🥗,Салат","BONE,🦴,Яс;BLOOD,🩸,Цус;MEDICINE,💊,Эм;BANDAGE,🩹,Боолт;MASK,😷,Маск;FINGER,☝️,Хуруу;THUMB,👍,Эрхий хуруу;MUSCLE,💪,Булчин;TONGUE,👅,Хэл;HAIR,💇,Үс","PARTY,🥳,Үдэшлэг;BIRTHDAY,🎂,Төрсөн өдөр;FIREWORK,🎆,Салют;CLOWN,🤡,Алиалагч;SANTA,🎅,Өвлийн өвгөн;ANGEL,👼,Тэнгэр элч;WISH,🌠,Хүсэл;GAME,🎮,Видео тоглоом;TOY,🧸,Тоглоом;CARD,💌,Мэндчилгээ","HOT,🥵,Халуун;COLD,🥶,Хүйтэн;BIG,🏢,Том;SMALL,🐜,Жижиг;FAST,🏎️,Хурдан;SLOW,🐌,Удаан;LONG,📏,Урт;SHORT,🩳,Богино;SOFT,☁️,Зөөлөн;HEAVY,🏋️,Хүнд","BEACH,🏖️,Далайн эрэг;FARM,🐄,Ферм;ZOO,🦁,Амьтны хүрээлэн;MUSEUM,🏛️,Музей;TEMPLE,🛕,Хийд;TOWER,🗼,Цамхаг;CITY,🏙️,Хот;VILLAGE,🏘️,Тосгон;MARKET,🛒,Зах;HOSPITAL,🏥,Эмнэлэг","NAADAM,🏇,Наадам;WRESTLE,🤼,Бөх;ARCHERY,🏹,Сур харваа;RACE,🏁,Уралдаан;DEEL,🥋,Дээл;AIRAG,🥛,Айраг;STEPPE,🌄,Тал нутаг;OVOO,🪨,Овоо;GENGHIS,👑,Чингис хаан;CAMP,🏕️,Бааз","CIRCLE,⭕,Тойрог;SQUARE,🟦,Дөрвөлжин;TRIANGLE,🔺,Гурвалжин;DIAMOND,💎,Алмаз;RING,💍,Бөгж;SHAPE,🔷,Хэлбэр;ARROW,➡️,Сум;OVAL,🥚,Зууван;GOLD,🥇,Алт;SILVER,🥈,Мөнгө","EAT,🍽️,Идэх;DRINK,🥤,Уух;READ,📖,Унших;WRITE,✍️,Бичих;SING,🎶,Дуулах;WALK,🚶,Алхах;CRY,😭,Уйлах;LAUGH,😂,Инээх;THINK,🤔,Бодох;PLAY,🛝,Тоглох","HIPPO,🦛,Хиппопотам;RHINO,🦏,Хирс;GORILLA,🦍,Горилла;KANGAROO,🦘,Кенгуру;LEOPARD,🐆,Ирвэс;BISON,🦦,Бизон;PEACOCK,🦚,Тогос;FLAMINGO,🦩,Фламинго;SWAN,🦢,Хун;GOOSE,🪿,Галуу"];
+const L=[BASE.slice(0,10),BASE.slice(10)].concat(NEWW.map(s=>s.split(";").map(x=>{const[a,b,c]=x.split(",");MN[a]=c;return[a,b]})));
+const ALL=L.flat();
+let S={stars:0,best:0,lv:{},hard:[]},lvK=0,lvS=0;
+try{S=Object.assign(S,JSON.parse(localStorage.getItem("spellParty1")||"{}"))}catch(e){}
+function sv(){try{S.stars=stars;S.best=Math.max(S.best,best);localStorage.setItem("spellParty1",JSON.stringify(S))}catch(e){}}
+stars=S.stars;best=S.best;upd();
+const mp=document.createElement("div");mp.id="map";mp.className="card hide";
+mp.innerHTML='<div style="font-size:28px;font-weight:800">🗺️ Choose a level</div><div class="lvs" id="lvs"></div><div class="row"><button class="btn hide" id="prac" style="background:#9b5de5">🔁 Practice tricky words</button></div>';
+$("app").appendChild(mp);
+function show(id){stopT();["start","play","end","map"].forEach(k=>$(k).classList.toggle("hide",k!==id))}
+function drawMap(){
+ $("lvs").innerHTML="";
+ L.forEach((ws,k)=>{const n=k+1,d=S.lv[n]||{},open=n===1||(S.lv[n-1]&&S.lv[n-1].done);
+  const b=document.createElement("button");b.className="lvb";b.style.background=COL[k%7];b.disabled=!open;
+  const st=d.done?"⭐".repeat(Math.max(1,Math.min(3,Math.round((d.s||0)/ws.length)))):"·";
+  b.innerHTML=`<b>${open?LVN[k][0]:"🔒"}</b>Level ${n}<br>${LVN[k][1]}<br>${st}`;
+  b.onclick=()=>startLevel(k);$("lvs").appendChild(b)});
+ $("prac").classList.toggle("hide",!S.hard.length);show("map");
+}
+const _ld=load;load=function(){_ld();$("slots").style.setProperty("--n",W[i][0].length);setSeason(SEAS[Math.floor(Math.max(0,lvK)/3)%4])};
+function startLevel(k){W=L[k];lvK=k;i=0;lvS=stars;show("play");load()}
+$("prac").onclick=()=>{W=S.hard.slice(0,10).map(w=>ALL.find(x=>x[0]===w)).filter(Boolean);lvK=-1;i=0;lvS=stars;show("play");load()};
+function finish(){
+ if(lvK>=0){const d=S.lv[lvK+1]||{};d.done=true;d.s=Math.max(d.s||0,stars-lvS);S.lv[lvK+1]=d}
+ sv();$("prog").style.width="100%";$("final").textContent=stars;$("best").textContent=best;
+ $("again").textContent="🗺️ Levels";show("end");fanfare();burst(300);
+ toast(lvK>=0&&lvK<L.length-1?"🔓 Level "+(lvK+2)+" unlocked!":"🏆 Level complete!");
+}
+$("next").onclick=()=>{i++;if(i>=W.length)finish();else load()};
+$("again").onclick=drawMap;
+$("go").onclick=()=>{tone(600);drawMap()};
+
+// ===== Mongolian kid mascot, seasons, morin khuur =====
+const MO={"":'<path d="M25 40Q32 47 39 40" stroke="#7a3b2e" stroke-width="2.4" fill="none" stroke-linecap="round"/>',win:'<path d="M24 38Q32 51 40 38Z" fill="#c1121f"/>',sad:'<path d="M26 45Q32 39 38 45" stroke="#7a3b2e" stroke-width="2.2" fill="none" stroke-linecap="round"/>'};
+const kid=m=>`<svg viewBox="0 0 64 80" width="100%" height="100%"><path d="M6 80Q6 54 32 54Q58 54 58 80Z" fill="#1d6fd6"/><path d="M24 54L40 72" stroke="#f7b801" stroke-width="3"/><rect x="6" y="68" width="52" height="6" fill="#d62828"/><circle cx="32" cy="32" r="16" fill="#f5c9a0"/><path d="M16 31Q16 15 32 15Q48 15 48 31Q40 23 32 23Q24 23 16 31Z" fill="#222"/><ellipse cx="32" cy="18" rx="19" ry="5" fill="#f7b801"/><path d="M18 18Q20 4 32 3Q44 4 46 18Z" fill="#1d4e9e"/><circle cx="32" cy="3" r="3" fill="#d62828"/><circle cx="25" cy="32" r="2.3" fill="#222"/><circle cx="39" cy="32" r="2.3" fill="#222"/><circle cx="20" cy="38" r="3.5" fill="#ff8fa3" opacity=".7"/><circle cx="44" cy="38" r="3.5" fill="#ff8fa3" opacity=".7"/>${MO[m]||MO[""]}</svg>`;
+const mc=$("mascot");
+Object.defineProperty(mc,"textContent",{set(v){this.innerHTML=kid(v==="🥳"?"win":v==="😅"?"sad":"")},get(){return ""}});
+mc.textContent="";
+const sp=$("start").querySelector(".pic");sp.innerHTML=kid("win");sp.style.cssText="width:110px;height:138px;font-size:0";
+
+const SEAS=["summer","autumn","winter","spring"],SE={summer:"",autumn:"🍂",winter:"❄️",spring:"🌸"};
+function setSeason(s){if(document.body.dataset.s===s)return;document.body.dataset.s=s;
+ $("snow").innerHTML=SE[s]?Array.from({length:9},(_,k)=>`<span style="left:${k*11+Math.random()*6}%;animation-delay:${-k*.9}s;animation-duration:${6+Math.random()*4}s">${SE[s]}</span>`).join(""):"";
+ toast({summer:"☀️ Зун!",autumn:"🍂 Намар!",winter:"❄️ Өвөл!",spring:"🌸 Хавар!"}[s],1400)}
+setSeason("summer");
+
+// morin khuur-like bowed string (synthesized)
+const SC=[293.66,329.63,392,440,493.88,587.33,659.25];
+function khuur(f,d=.7,t=0,v=.18){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const n=ac.currentTime+t,g=ac.createGain(),lp=ac.createBiquadFilter(),lfo=ac.createOscillator(),lg=ac.createGain();
+ lp.type="lowpass";lp.frequency.value=1400;lp.Q.value=2;
+ g.gain.setValueAtTime(.001,n);g.gain.linearRampToValueAtTime(v,n+.09);g.gain.setValueAtTime(v,n+d*.7);g.gain.exponentialRampToValueAtTime(.001,n+d);
+ lfo.frequency.value=5.5;lg.gain.value=f*.012;lfo.connect(lg);
+ [0,6].forEach(dt=>{const o=ac.createOscillator();o.type="sawtooth";o.frequency.value=f;o.detune.value=dt;lg.connect(o.frequency);o.connect(lp);o.start(n);o.stop(n+d+.05)});
+ lfo.start(n);lfo.stop(n+d+.05);lp.connect(g);g.connect(ac.destination)}catch(e){}}
+fanfare=function(){[0,2,3,5,6].forEach((s,k)=>khuur(SC[s],.6,k*.28,.2));khuur(146.83,1.8,0,.12)};
+let bgm=null,bi=0;const PAT=[0,2,3,2,4,3,2,0,1,2,3,5,4,3,2,0];
+function bgmStart(){if(bgm)return;bgm=setInterval(()=>{const s=PAT[bi++%PAT.length];khuur(SC[s],1.2,0,.08);if(bi%4===1)khuur(146.83,2.4,0,.06)},1300)}
+function bgmStop(){clearInterval(bgm);bgm=null}
+const mb=document.createElement("button");mb.className="chip";mb.id="mBg";mb.textContent="🎻 Хөгжим";document.querySelector(".modes").appendChild(mb);
+mb.onclick=()=>{if(bgm)bgmStop();else bgmStart();mb.classList.toggle("on",!!bgm)};
+function track(w,ok){const h=S.hard,p=h.indexOf(w);if(ok&&p>-1)h.splice(p,1);if(!ok&&p<0)h.push(w);sv()}
+const _win=win;win=function(){const ok=miss===0;_win();track(W[i][0],ok)};
+const _tu=timeUp;timeUp=function(){if(done)return;_tu();track(W[i][0],false)};
+function toast(t,ms=1800){const e=$("toast");e.style.maxWidth="88vw";e.style.fontSize="24px";e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),ms)}
+// install (add to home screen)
+let dp=null;addEventListener("beforeinstallprompt",e=>{e.preventDefault();dp=e});
+const ib=document.createElement("button");ib.className="chip";ib.textContent="📲 Install";document.querySelector(".modes").appendChild(ib);
+ib.onclick=()=>{if(dp){dp.prompt();dp=null}else toast("iPhone: Share ⬆️ → Add to Home Screen. Android: ⋮ → Install app",4500)};
+(function(){const c=document.createElement("canvas");c.width=c.height=512;const x=c.getContext("2d");const g=x.createLinearGradient(0,0,0,512);g.addColorStop(0,"#7fdbff");g.addColorStop(1,"#ffe66d");x.fillStyle=g;x.fillRect(0,0,512,512);x.font="330px serif";x.textAlign="center";x.textBaseline="middle";x.fillText("🐎",256,280);
+ const ic=c.toDataURL("image/png"),h=document.head,add=(t,a)=>{const e=document.createElement(t);Object.assign(e,a);h.appendChild(e)};
+ add("link",{rel:"apple-touch-icon",href:ic});add("meta",{name:"apple-mobile-web-app-capable",content:"yes"});add("meta",{name:"mobile-web-app-capable",content:"yes"});add("meta",{name:"apple-mobile-web-app-title",content:"Spelling"});add("meta",{name:"theme-color",content:"#7fdbff"});
+ try{const m={name:"Spelling Party",short_name:"Spelling",display:"standalone",background_color:"#7fdbff",theme_color:"#7fdbff",start_url:location.href,icons:[{src:ic,sizes:"512x512",type:"image/png"}]};add("link",{rel:"manifest",href:URL.createObjectURL(new Blob([JSON.stringify(m)],{type:"application/manifest+json"}))})}catch(e){}})();
+</script></body></html>
